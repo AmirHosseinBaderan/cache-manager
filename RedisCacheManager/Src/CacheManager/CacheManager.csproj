@@ -10,7 +10,7 @@
 		<PackageProjectUrl>https://github.com/AmirHosseinBaderan/redis-cache-manager</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/AmirHosseinBaderan/redis-cache-manager</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
-		<PackageVersion>1.6.0</PackageVersion>
+		<PackageVersion>1.7.0</PackageVersion>
 	</PropertyGroup>
 
 	<ItemGroup>

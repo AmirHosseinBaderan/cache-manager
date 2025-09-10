@@ -1,6 +1,4 @@
-﻿
-
-using CacheManager.Abstraction;
+﻿using CacheManager.Abstraction;
 using CacheManager.Configuration;
 using CacheManager.Core;
 using Microsoft.Extensions.Logging;
@@ -31,7 +29,8 @@ internal class CacheBase(ICacheDb cacheDb, ILogger<CacheBase> logger) : ICacheBa
         }
     }
 
-    public async Task<RedisValue> GetOrSetItemAsync(string key, Func<Task<RedisValue>> action)
+    public async Task<RedisValue> GetOrSetItemAsync(string key, Func<Task<RedisValue>> action,
+        Func<RedisValue, bool>? setIf = null)
     {
         try
         {
@@ -43,8 +42,10 @@ internal class CacheBase(ICacheDb cacheDb, ILogger<CacheBase> logger) : ICacheBa
             if (value.IsNullOrEmpty)
             {
                 var res = await action();
-                return await SetItemAsync(key, res);
+                if (setIf is null || setIf(res))
+                    return await SetItemAsync(key, res);
             }
+
             return value;
         }
         catch (Exception ex)
@@ -54,7 +55,8 @@ internal class CacheBase(ICacheDb cacheDb, ILogger<CacheBase> logger) : ICacheBa
         }
     }
 
-    public async Task<RedisValue> GetOrSetItemAsync(string key, CacheDuration cacheDuration, Func<Task<RedisValue>> action)
+    public async Task<RedisValue> GetOrSetItemAsync(string key, CacheDuration cacheDuration,
+        Func<Task<RedisValue>> action, Func<RedisValue, bool>? setIf = null)
     {
         try
         {
@@ -66,8 +68,10 @@ internal class CacheBase(ICacheDb cacheDb, ILogger<CacheBase> logger) : ICacheBa
             if (value.IsNullOrEmpty)
             {
                 var res = await action();
-                return await SetItemAsync(key, res, cacheDuration.ToTimeSpan());
+                if (setIf is null || setIf(res))
+                    return await SetItemAsync(key, res, cacheDuration.ToTimeSpan());
             }
+
             return value;
         }
         catch (Exception ex)
@@ -77,7 +81,8 @@ internal class CacheBase(ICacheDb cacheDb, ILogger<CacheBase> logger) : ICacheBa
         }
     }
 
-    public async Task<RedisValue> GetOrSetItemAsync(string key, Func<RedisValue> action)
+    public async Task<RedisValue> GetOrSetItemAsync(string key, Func<RedisValue> action,
+        Func<RedisValue, bool>? setIf = null)
     {
         try
         {
@@ -89,8 +94,10 @@ internal class CacheBase(ICacheDb cacheDb, ILogger<CacheBase> logger) : ICacheBa
             if (value.IsNullOrEmpty)
             {
                 var res = action();
-                return await SetItemAsync(key, res);
+                if (setIf is null || setIf(res))
+                    return await SetItemAsync(key, res);
             }
+
             return value;
         }
         catch (Exception ex)
@@ -100,7 +107,8 @@ internal class CacheBase(ICacheDb cacheDb, ILogger<CacheBase> logger) : ICacheBa
         }
     }
 
-    public async Task<RedisValue> GetOrSetItemAsync(string key, CacheDuration cacheDuration, Func<RedisValue> action)
+    public async Task<RedisValue> GetOrSetItemAsync(string key, CacheDuration cacheDuration, Func<RedisValue> action,
+        Func<RedisValue, bool>? setIf = null)
     {
         try
         {
@@ -112,8 +120,10 @@ internal class CacheBase(ICacheDb cacheDb, ILogger<CacheBase> logger) : ICacheBa
             if (value.IsNullOrEmpty)
             {
                 var res = action();
-                return await SetItemAsync(key, res, cacheDuration.ToTimeSpan());
+                if (setIf is null || setIf(res))
+                    return await SetItemAsync(key, res, cacheDuration.ToTimeSpan());
             }
+
             return value;
         }
         catch (Exception ex)

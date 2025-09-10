@@ -20,7 +20,8 @@ internal class JsonCache(ICacheBase cacheBase) : IJsonCache
         }
     }
 
-    public async Task<TModel?> GetOrSetItemAsync<TModel>(string key, Func<Task<TModel>> func)
+    public async Task<TModel?> GetOrSetItemAsync<TModel>(string key, Func<Task<TModel>> func,
+        Func<RedisValue, bool>? setIf = null)
     {
         try
         {
@@ -29,9 +30,10 @@ internal class JsonCache(ICacheBase cacheBase) : IJsonCache
                 TModel? res = await func();
                 if (res is null)
                     return RedisValue.Null;
-                string json = JsonConvert.SerializeObject(res, Configs.CacheConfigs.Formatting, Configs.CacheConfigs.JsonSerializerSettings);
+                string json = JsonConvert.SerializeObject(res, Configs.CacheConfigs.Formatting,
+                    Configs.CacheConfigs.JsonSerializerSettings);
                 return new(json);
-            });
+            }, setIf);
             return value.IsNullOrEmpty
                 ? await func()
                 : JsonConvert.DeserializeObject<TModel>(value.ToString());
@@ -42,7 +44,8 @@ internal class JsonCache(ICacheBase cacheBase) : IJsonCache
         }
     }
 
-    public async Task<TModel?> GetOrSetItemAsync<TModel>(string key, CacheDuration cacheDuration, Func<Task<TModel>> func)
+    public async Task<TModel?> GetOrSetItemAsync<TModel>(string key, CacheDuration cacheDuration,
+        Func<Task<TModel>> func, Func<RedisValue, bool>? setIf = null)
     {
         try
         {
@@ -51,9 +54,10 @@ internal class JsonCache(ICacheBase cacheBase) : IJsonCache
                 TModel? res = await func();
                 if (res is null)
                     return RedisValue.Null;
-                string json = JsonConvert.SerializeObject(res, Configs.CacheConfigs.Formatting, Configs.CacheConfigs.JsonSerializerSettings);
+                string json = JsonConvert.SerializeObject(res, Configs.CacheConfigs.Formatting,
+                    Configs.CacheConfigs.JsonSerializerSettings);
                 return new(json);
-            });
+            }, setIf);
             return value.IsNullOrEmpty
                 ? await func()
                 : JsonConvert.DeserializeObject<TModel>(value.ToString());
@@ -64,7 +68,8 @@ internal class JsonCache(ICacheBase cacheBase) : IJsonCache
         }
     }
 
-    public async Task<TModel?> GetOrSetItemAsync<TModel>(string key, Func<TModel> action)
+    public async Task<TModel?> GetOrSetItemAsync<TModel>(string key, Func<TModel> action,
+        Func<RedisValue, bool>? setIf = null)
     {
         try
         {
@@ -73,9 +78,10 @@ internal class JsonCache(ICacheBase cacheBase) : IJsonCache
                 TModel? res = action();
                 if (res is null)
                     return RedisValue.Null;
-                string json = JsonConvert.SerializeObject(res, Configs.CacheConfigs.Formatting, Configs.CacheConfigs.JsonSerializerSettings);
+                string json = JsonConvert.SerializeObject(res, Configs.CacheConfigs.Formatting,
+                    Configs.CacheConfigs.JsonSerializerSettings);
                 return new(json);
-            });
+            }, setIf);
             return value.IsNullOrEmpty
                 ? action()
                 : JsonConvert.DeserializeObject<TModel>(value.ToString());
@@ -86,7 +92,8 @@ internal class JsonCache(ICacheBase cacheBase) : IJsonCache
         }
     }
 
-    public async Task<TModel?> GetOrSetItemAsync<TModel>(string key, CacheDuration cacheDuration, Func<TModel> action)
+    public async Task<TModel?> GetOrSetItemAsync<TModel>(string key, CacheDuration cacheDuration, Func<TModel> action,
+        Func<RedisValue, bool>? setIf = null)
     {
         try
         {
@@ -95,9 +102,10 @@ internal class JsonCache(ICacheBase cacheBase) : IJsonCache
                 TModel? res = action();
                 if (res is null)
                     return RedisValue.Null;
-                string json = JsonConvert.SerializeObject(res, Configs.CacheConfigs.Formatting, Configs.CacheConfigs.JsonSerializerSettings);
+                string json = JsonConvert.SerializeObject(res, Configs.CacheConfigs.Formatting,
+                    Configs.CacheConfigs.JsonSerializerSettings);
                 return new(json);
-            });
+            }, setIf);
             return value.IsNullOrEmpty
                 ? action()
                 : JsonConvert.DeserializeObject<TModel>(value.ToString());
@@ -121,7 +129,8 @@ internal class JsonCache(ICacheBase cacheBase) : IJsonCache
     {
         try
         {
-            string json = JsonConvert.SerializeObject(obj, Configs.CacheConfigs.Formatting, Configs.CacheConfigs.JsonSerializerSettings);
+            string json = JsonConvert.SerializeObject(obj, Configs.CacheConfigs.Formatting,
+                Configs.CacheConfigs.JsonSerializerSettings);
             await cacheBase.SetItemAsync(key, new(json), cacheTime);
             return obj;
         }
@@ -132,12 +141,12 @@ internal class JsonCache(ICacheBase cacheBase) : IJsonCache
     }
 
     public async Task<TModel?> SetItemIfAsync<TModel>(bool condition, string key, TModel? obj)
-        => condition ?
-          await SetItemAsync(key, obj, cacheTime: null)
-        : obj;
+        => condition
+            ? await SetItemAsync(key, obj, cacheTime: null)
+            : obj;
 
     public async Task<TModel?> SetItemIfAsync<TModel>(bool condition, string key, TModel? obj, CacheDuration duration)
-        => condition ?
-          await SetItemAsync(key, obj, cacheTime: duration.ToTimeSpan())
-        : obj;
+        => condition
+            ? await SetItemAsync(key, obj, cacheTime: duration.ToTimeSpan())
+            : obj;
 }

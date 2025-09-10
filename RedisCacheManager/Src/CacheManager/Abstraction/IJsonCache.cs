@@ -16,13 +16,16 @@ public interface IJsonCache
 
     Task RemoveItemAsync(string key);
 
-    Task<TModel?> GetOrSetItemAsync<TModel>(string key, Func<Task<TModel>> action);
+    Task<TModel?> GetOrSetItemAsync<TModel>(string key, Func<Task<TModel>> action,
+        Func<RedisValue, bool>? setIf = null);
 
-    Task<TModel?> GetOrSetItemAsync<TModel>(string key, Func<TModel> action);
+    Task<TModel?> GetOrSetItemAsync<TModel>(string key, Func<TModel> action, Func<RedisValue, bool>? setIf = null);
 
-    Task<TModel?> GetOrSetItemAsync<TModel>(string key, CacheDuration cacheDuration, Func<Task<TModel>> action);
+    Task<TModel?> GetOrSetItemAsync<TModel>(string key, CacheDuration cacheDuration, Func<Task<TModel>> action,
+        Func<RedisValue, bool>? setIf = null);
 
-    Task<TModel?> GetOrSetItemAsync<TModel>(string key, CacheDuration cacheDuration, Func<TModel> action);
+    Task<TModel?> GetOrSetItemAsync<TModel>(string key, CacheDuration cacheDuration, Func<TModel> action,
+        Func<RedisValue, bool>? setIf = null);
 
     Task<TModel?> SetItemAsync<TModel>(string key, TModel obj, TimeSpan? cacheTime);
 }

@@ -20,7 +20,8 @@ public class ProtoCache(ICacheBase cacheBase) : IProtoCache
         }
     }
 
-    public async Task<TModel?> GetOrSetItemAsync<TModel>(string key, Func<Task<TModel>> func) where TModel : IMessage<TModel>, new()
+    public async Task<TModel?> GetOrSetItemAsync<TModel>(string key, Func<Task<TModel>> func,
+        Func<RedisValue, bool>? setIf = null) where TModel : IMessage<TModel>, new()
     {
         try
         {
@@ -28,9 +29,9 @@ public class ProtoCache(ICacheBase cacheBase) : IProtoCache
             {
                 TModel? res = await func();
                 return res is null
-                ? RedisValue.Null
-                : (RedisValue)res.Serialize();
-            });
+                    ? RedisValue.Null
+                    : (RedisValue)res.Serialize();
+            }, setIf);
             return value.IsNullOrEmpty
                 ? await func()
                 : ((byte[])value!).Deserialize<TModel>();
@@ -41,7 +42,8 @@ public class ProtoCache(ICacheBase cacheBase) : IProtoCache
         }
     }
 
-    public async Task<TModel?> GetOrSetItemAsync<TModel>(string key, CacheDuration cacheDuration, Func<Task<TModel>> func) where TModel : IMessage<TModel>, new()
+    public async Task<TModel?> GetOrSetItemAsync<TModel>(string key, CacheDuration cacheDuration,
+        Func<Task<TModel>> func, Func<RedisValue, bool>? setIf = null) where TModel : IMessage<TModel>, new()
     {
         try
         {
@@ -49,9 +51,9 @@ public class ProtoCache(ICacheBase cacheBase) : IProtoCache
             {
                 TModel? res = await func();
                 return res is null
-                ? RedisValue.Null
-                : (RedisValue)res.Serialize();
-            });
+                    ? RedisValue.Null
+                    : (RedisValue)res.Serialize();
+            }, setIf);
             return value.IsNullOrEmpty
                 ? await func()
                 : JsonConvert.DeserializeObject<TModel>(value.ToString());
@@ -62,7 +64,8 @@ public class ProtoCache(ICacheBase cacheBase) : IProtoCache
         }
     }
 
-    public async Task<TModel?> GetOrSetItemAsync<TModel>(string key, Func<TModel> action) where TModel : IMessage<TModel>, new()
+    public async Task<TModel?> GetOrSetItemAsync<TModel>(string key, Func<TModel> action,
+        Func<RedisValue, bool>? setIf = null) where TModel : IMessage<TModel>, new()
     {
         try
         {
@@ -70,9 +73,9 @@ public class ProtoCache(ICacheBase cacheBase) : IProtoCache
             {
                 TModel? res = action();
                 return res is null
-                ? RedisValue.Null
-                : (RedisValue)res.Serialize();
-            });
+                    ? RedisValue.Null
+                    : (RedisValue)res.Serialize();
+            }, setIf);
             return value.IsNullOrEmpty
                 ? action()
                 : ((byte[])value!).Deserialize<TModel>();
@@ -83,7 +86,8 @@ public class ProtoCache(ICacheBase cacheBase) : IProtoCache
         }
     }
 
-    public async Task<TModel?> GetOrSetItemAsync<TModel>(string key, CacheDuration cacheDuration, Func<TModel> action) where TModel : IMessage<TModel>, new()
+    public async Task<TModel?> GetOrSetItemAsync<TModel>(string key, CacheDuration cacheDuration, Func<TModel> action,
+        Func<RedisValue, bool>? setIf = null) where TModel : IMessage<TModel>, new()
     {
         try
         {
@@ -91,9 +95,9 @@ public class ProtoCache(ICacheBase cacheBase) : IProtoCache
             {
                 TModel? res = action();
                 return res is null
-                ? RedisValue.Null
-                : (RedisValue)res.Serialize();
-            });
+                    ? RedisValue.Null
+                    : (RedisValue)res.Serialize();
+            }, setIf);
             return value.IsNullOrEmpty
                 ? action()
                 : JsonConvert.DeserializeObject<TModel>(value.ToString());
@@ -110,10 +114,12 @@ public class ProtoCache(ICacheBase cacheBase) : IProtoCache
     public async Task<TModel?> SetItemAsync<TModel>(string key, TModel? obj) where TModel : IMessage<TModel>, new()
         => await SetItemAsync(key, obj, cacheTime: null);
 
-    public async Task<TModel?> SetItemAsync<TModel>(string key, TModel? obj, CacheDuration duration) where TModel : IMessage<TModel>, new()
+    public async Task<TModel?> SetItemAsync<TModel>(string key, TModel? obj, CacheDuration duration)
+        where TModel : IMessage<TModel>, new()
         => await SetItemAsync(key, obj, duration.ToTimeSpan());
 
-    public async Task<TModel?> SetItemAsync<TModel>(string key, TModel? obj, TimeSpan? cacheTime) where TModel : IMessage<TModel>, new()
+    public async Task<TModel?> SetItemAsync<TModel>(string key, TModel? obj, TimeSpan? cacheTime)
+        where TModel : IMessage<TModel>, new()
     {
         try
         {
@@ -129,13 +135,15 @@ public class ProtoCache(ICacheBase cacheBase) : IProtoCache
         }
     }
 
-    public async Task<TModel?> SetItemIfAsync<TModel>(bool condition, string key, TModel? obj) where TModel : IMessage<TModel>, new()
-        => condition ?
-          await SetItemAsync(key, obj, cacheTime: null)
-        : obj;
+    public async Task<TModel?> SetItemIfAsync<TModel>(bool condition, string key, TModel? obj)
+        where TModel : IMessage<TModel>, new()
+        => condition
+            ? await SetItemAsync(key, obj, cacheTime: null)
+            : obj;
 
-    public async Task<TModel?> SetItemIfAsync<TModel>(bool condition, string key, TModel? obj, CacheDuration duration) where TModel : IMessage<TModel>, new()
-        => condition ?
-          await SetItemAsync(key, obj, cacheTime: duration.ToTimeSpan())
-        : obj;
+    public async Task<TModel?> SetItemIfAsync<TModel>(bool condition, string key, TModel? obj, CacheDuration duration)
+        where TModel : IMessage<TModel>, new()
+        => condition
+            ? await SetItemAsync(key, obj, cacheTime: duration.ToTimeSpan())
+            : obj;
 }
