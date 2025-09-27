@@ -19,30 +19,48 @@ internal class RedisDispatcher(ICacheDb db, IJsonCache cache, IServiceProvider s
             }
 
             var keys = await GetKeysAsync(database);
-            bool foundMessage = false;
+            var values = await database.StringGetAsync(keys);
 
-            foreach (var key in keys)
-            {
-                var value = await cache.GetItemAsync<MessageEnvelope>(key);
-                if (value != null)
+            var filters = keys
+                .Zip(values, (key, value) => new { Key = key, Value = value })
+                .Where(kv => !kv.Value.IsNullOrEmpty)
+                .Select(kv =>
                 {
-                    if (value.TimeSpan == TimeSpan.Zero)
+                    var json = kv.Value.ToString();
+                    TimeSpan ticks = TimeSpan.Zero;
+
+                    // Look for '"TimeSpan":12345678'
+                    var match = System.Text.RegularExpressions.Regex.Match(
+                        json,
+                        @"""TimeSpan""\s*:\s*""([^""]+)"""
+                    );
+                    if (match.Success)
                     {
-                        await DispatchAsync(value, stoppingToken);
-                        await cache.RemoveItemAsync(key);
-                    }
-                    else if (value.TimeSpan < TimeSpan.FromTicks(DateTime.Now.Ticks))
-                    {
-                        await DispatchAsync(value, stoppingToken);
-                        await cache.RemoveItemAsync(key);
+                        var timeSpanString = match.Groups[1].Value;
+
+                        // Parse to TimeSpan
+                        _ = TimeSpan.TryParse(timeSpanString, out ticks);
                     }
 
-                    foundMessage = true;
-                }
+                    // Only ready messages
+                    if (ticks == TimeSpan.Zero || ticks <= TimeSpan.FromTicks(DateTimeOffset.Now.Ticks))
+                    {
+                        var message = JsonConvert.DeserializeObject<MessageEnvelope>(json);
+                        return new { kv.Key, Message = message };
+                    }
+
+                    return null;
+                })
+                .Where(x => x != null)
+                .ToList();
+
+            foreach (var value in filters)
+            {
+                await DispatchAsync(value.Message, stoppingToken);
+                await cache.RemoveItemAsync(value.Key);
             }
 
-            if (!foundMessage)
-                await Task.Delay(500, stoppingToken);
+            await Task.Delay(500, stoppingToken);
         }
     }
 

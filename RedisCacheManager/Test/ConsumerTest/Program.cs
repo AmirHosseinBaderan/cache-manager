@@ -29,7 +29,10 @@ var producer = provider.GetRequiredService<IProducer>();
 
 Order order = new(Guid.NewGuid(), "amir hossein");
 // await producer.PushAsync(order);
-await producer.PushAsync(order, TimeSpan.FromTicks(DateTime.Now.AddSeconds(15).Ticks));
+for (int i = 0; i < 2000; i++)
+{
+    await producer.PushAsync(order, TimeSpan.FromTicks(DateTime.Now.AddSeconds(15).Ticks));
+}
 
 // 3️⃣ Run the host to start background services (consumers)
 await host.RunAsync();
