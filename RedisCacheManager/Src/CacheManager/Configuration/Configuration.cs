@@ -1,4 +1,5 @@
-﻿using CacheManager.Abstraction;
+﻿using System.Reflection;
+using CacheManager.Abstraction;
 using CacheManager.Core;
 using CacheManager.Implementation;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,6 +20,29 @@ public static class Configuration
 
         services.AddScoped<IJsonCache, JsonCache>();
         services.AddScoped<IProtoCache, ProtoCache>();
+
+        return services;
+    }
+
+    public static IServiceCollection AddRedisCacheManagerQueue(
+        this IServiceCollection services, Assembly? assembly = null)
+    {
+        assembly ??= Assembly.GetExecutingAssembly();
+
+        // Find all classes implementing IRedisConsumer<T>
+        var consumerTypes = assembly.GetTypes()
+            .Where(t => !t.IsAbstract && !t.IsInterface)
+            .SelectMany(t => t.GetInterfaces()
+                .Where(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IRedisConsumer<>))
+                .Select(i => new { Service = i, Implementation = t }))
+            .ToList();
+
+        foreach (var c in consumerTypes)
+            services.AddScoped(c.Service, c.Implementation);
+
+        // Add Producer & Dispatcher
+        services.AddSingleton<Producer>();
+        services.AddHostedService<RedisDispatcher>();
 
         return services;
     }

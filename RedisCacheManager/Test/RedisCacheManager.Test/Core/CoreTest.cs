@@ -12,7 +12,7 @@ public class CoreTest
     public void SetUp()
     {
         _services = new ServiceCollection();
-        _services.AddRedisCacheManager(() => new("127.0.0.1:6379", 1, null));
+        _services.AddRedisCacheManager(() => new("127.0.0.1:6379", 1, null,QueueName:"QueueTest"));
     }
 
     [Test]

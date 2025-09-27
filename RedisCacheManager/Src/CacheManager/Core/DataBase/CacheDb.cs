@@ -11,22 +11,17 @@ public class CacheDb(ICacheCore core) : ICacheDb
         await core.DisposeAsync();
     }
 
-    public async Task<IDatabase?> GetDataBaseAsync()
-        => await GetDataBaseAsync(Configs.CacheConfigs.ConnectionString, Configs.CacheConfigs.Instance);
+    public async Task<IDatabase?> GetDataBaseAsync(CancellationToken cancellationToken = default)
+        => await GetDataBaseAsync(Configs.CacheConfigs.ConnectionString, Configs.CacheConfigs.Instance,
+            cancellationToken);
 
-    public async Task<IDatabase?> GetDataBaseAsync(string connectionString, int instance)
+    public async Task<IDatabase?> GetDataBaseAsync(string connectionString, int instance,
+        CancellationToken cancellationToken = default)
     {
-        try
-        {
-            var connection = await core.ConnectAsync(connectionString);
-            if (connection is null)
-                return null;
+        var connection = await core.ConnectAsync(connectionString, cancellationToken);
+        if (connection is null)
+            return null;
 
-            return connection.GetDatabase(instance);
-        }
-        catch
-        {
-            throw;
-        }
+        return connection.GetDatabase(instance);
     }
 }

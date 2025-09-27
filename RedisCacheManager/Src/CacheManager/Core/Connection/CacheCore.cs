@@ -7,10 +7,11 @@ public class CacheCore(ILogger<CacheCore> logger) : ICacheCore
 {
     private ConnectionMultiplexer? _connection;
 
-    public async Task<ConnectionMultiplexer?> ConnectAsync()
-        => await ConnectAsync(Configs.CacheConfigs.ConnectionString);
+    public async Task<ConnectionMultiplexer?> ConnectAsync(CancellationToken cancellationToken = default)
+        => await ConnectAsync(Configs.CacheConfigs.ConnectionString, cancellationToken);
 
-    public async Task<ConnectionMultiplexer?> ConnectAsync(string connectionString)
+    public async Task<ConnectionMultiplexer?> ConnectAsync(string connectionString,
+        CancellationToken cancellationToken = default)
     {
         try
         {

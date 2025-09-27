@@ -18,7 +18,7 @@ public class CacheTest
         _model = new("1", "Amir", "Baderan");
 
         _services = new ServiceCollection();
-        _services.AddRedisCacheManager(() => new("127.0.0.1:6379", 1, null));
+        _services.AddRedisCacheManager(() => new("127.0.0.1:6379", 1, null,QueueName:"QueueTest"));
     }
 
     public async Task<IJsonCache?> GetService()
