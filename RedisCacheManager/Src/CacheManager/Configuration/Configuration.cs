@@ -29,9 +29,13 @@ public static class Configuration
     {
         assembly ??= Assembly.GetExecutingAssembly();
 
+        // Add Producer & Dispatcher
+        services.AddSingleton<IProducer, Producer>();
+        services.AddHostedService<RedisDispatcher>();
+        
         // Find all classes implementing IRedisConsumer<T>
         var consumerTypes = assembly.GetTypes()
-            .Where(t => !t.IsAbstract && !t.IsInterface)
+            .Where(t => t is { IsAbstract: false, IsInterface: false })
             .SelectMany(t => t.GetInterfaces()
                 .Where(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IRedisConsumer<>))
                 .Select(i => new { Service = i, Implementation = t }))
@@ -39,10 +43,6 @@ public static class Configuration
 
         foreach (var c in consumerTypes)
             services.AddScoped(c.Service, c.Implementation);
-
-        // Add Producer & Dispatcher
-        services.AddSingleton<Producer>();
-        services.AddHostedService<RedisDispatcher>();
 
         return services;
     }

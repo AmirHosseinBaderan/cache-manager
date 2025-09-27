@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CacheManager", "Src\CacheMa
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RedisCacheManager.Test", "Test\RedisCacheManager.Test\RedisCacheManager.Test.csproj", "{9DE61199-DAB0-47E3-9224-7CDF20D74BD5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsumerTest", "Test\ConsumerTest\ConsumerTest.csproj", "{6690E560-9B04-4AE4-847F-CBCFCD321503}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -25,6 +27,10 @@ Global
 		{9DE61199-DAB0-47E3-9224-7CDF20D74BD5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9DE61199-DAB0-47E3-9224-7CDF20D74BD5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9DE61199-DAB0-47E3-9224-7CDF20D74BD5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6690E560-9B04-4AE4-847F-CBCFCD321503}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6690E560-9B04-4AE4-847F-CBCFCD321503}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6690E560-9B04-4AE4-847F-CBCFCD321503}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6690E560-9B04-4AE4-847F-CBCFCD321503}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -32,6 +38,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{52CC5F53-FC4F-4FC5-ABB5-AA743DB02622} = {580553CF-3CCA-4923-97B2-D312E386EF62}
 		{9DE61199-DAB0-47E3-9224-7CDF20D74BD5} = {2B9AE7FB-45E1-41ED-9C9E-AFF927BD2221}
+		{6690E560-9B04-4AE4-847F-CBCFCD321503} = {2B9AE7FB-45E1-41ED-9C9E-AFF927BD2221}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0CFAE3C0-66FC-454D-8CBF-6041B360D6DF}

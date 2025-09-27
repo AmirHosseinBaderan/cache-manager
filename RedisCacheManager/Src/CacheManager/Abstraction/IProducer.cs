@@ -9,4 +9,6 @@ public class MessageEnvelope
 {
     public string Type { get; set; } = null!;
     public string Data { get; set; } = null!;
+
+    public TimeSpan TimeSpan { get; set; }
 }
