@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Timer = System.Timers.Timer;
 
 // 1️⃣ Create the host
 var host = Host.CreateDefaultBuilder(args)
@@ -27,24 +28,47 @@ using var scope = host.Services.CreateScope();
 var provider = scope.ServiceProvider;
 var producer = provider.GetRequiredService<IProducer>();
 
-Order order = new(Guid.NewGuid(), "amir hossein");
 // await producer.PushAsync(order);
-for (int i = 0; i < 2000; i++)
+Task.Run(async () =>
 {
-    await producer.PushAsync(order, TimeSpan.FromTicks(DateTime.Now.AddSeconds(15).Ticks));
-}
+    for (int i = 0; i < 200000; i++)
+    {
+        Order order = new(Guid.NewGuid(), "amir hossein", i);
+        await producer.PushAsync(order, TimeSpan.FromSeconds(10));
+    }
+});
+// // 3️⃣ Run the host to start background services (consumers)
 
-// 3️⃣ Run the host to start background services (consumers)
+// for (int i = 1; i < 2000; i++)
+// {
+//     int copy = i; // capture the current value
+//     Timer timer = new(copy * 100);
+//     timer.AutoReset = false;
+//     timer.Elapsed += (sender, e) =>
+//     {
+//         Console.WriteLine($"Timer Elapsed {copy}");
+//         timer.Dispose(); // clean up
+//     };
+//     timer.Start();
+// }
+
 await host.RunAsync();
+
+public class Consumed
+{
+    public static int Count = 0;
+}
 
 // ----------------- Consumer -----------------
 class OrderConsumer : IRedisConsumer<Order>
 {
     public Task ExecuteAsync(Order model, CancellationToken token = default)
     {
-        Console.WriteLine("OrderConsumer.ExecuteAsync() Give model {0}", JsonConvert.SerializeObject(model));
+        Consumed.Count++;
+        Console.WriteLine("OrderConsumer.ExecuteAsync() Give model {0} Consumed Count : {1}",
+            JsonConvert.SerializeObject(model), Consumed.Count);
         return Task.CompletedTask;
     }
 }
 
-public record Order(Guid Id, string Name);
+public record Order(Guid Id, string Name, int Index);

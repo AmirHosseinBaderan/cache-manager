@@ -31,7 +31,8 @@ public static class Configuration
 
         // Add Producer & Dispatcher
         services.AddSingleton<IProducer, Producer>();
-        services.AddHostedService<RedisDispatcher>();
+        services.AddSingleton<ITimerDispatcher, TimerDispatcher>();
+        services.AddScoped<RedisDispatcher>();
         
         // Find all classes implementing IRedisConsumer<T>
         var consumerTypes = assembly.GetTypes()

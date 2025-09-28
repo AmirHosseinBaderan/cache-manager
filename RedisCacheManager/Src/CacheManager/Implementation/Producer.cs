@@ -2,9 +2,13 @@ using Microsoft.Extensions.Logging;
 
 namespace CacheManager.Implementation;
 
-internal class Producer(IJsonCache cache, ILogger<Producer> logger) : IProducer
+internal class Producer(
+    IJsonCache cache,
+    ITimerDispatcher timerDispatcher,
+    RedisDispatcher dispatcher,
+    ILogger<Producer> logger) : IProducer
 {
-    public async Task PushAsync<T>(T model, TimeSpan? delay = null, CancellationToken token = default)
+    public async Task PushAsync<T>(T model, TimeSpan delay, CancellationToken token = default)
     {
         try
         {
@@ -14,11 +18,13 @@ internal class Producer(IJsonCache cache, ILogger<Producer> logger) : IProducer
             {
                 Type = typeof(T).AssemblyQualifiedName!,
                 Data = JsonConvert.SerializeObject(model),
-                TimeSpan = delay ?? TimeSpan.Zero,
             };
 
             var queueKey = $"{Configs.CacheConfigs.QueueName}-{Guid.NewGuid():N}";
             await cache.SetItemAsync(queueKey, message);
+
+            timerDispatcher.Run(queueKey, delay,
+                async (key) => await dispatcher.DispatchAsync(key, token));
         }
         catch (Exception e)
         {
