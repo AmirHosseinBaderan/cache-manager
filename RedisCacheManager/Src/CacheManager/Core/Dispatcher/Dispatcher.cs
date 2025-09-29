@@ -27,6 +27,7 @@ internal class RedisDispatcher(ICacheDb db, IJsonCache cache, IServiceProvider s
 
     public async Task DispatchAsync(string key, CancellationToken ct)
     {
+        await cache.RemoveItemAsync(key);
         var value = await cache.GetItemAsync<MessageEnvelope>(key);
         if (value is null)
             return;

@@ -8,7 +8,7 @@ internal class Producer(
     RedisDispatcher dispatcher,
     ILogger<Producer> logger) : IProducer
 {
-    public async Task PushAsync<T>(T model, TimeSpan delay, CancellationToken token = default)
+    public async Task PushAsync<T>(T model, TimeSpan delay, string? key = null, CancellationToken token = default)
     {
         try
         {
@@ -20,15 +20,22 @@ internal class Producer(
                 Data = JsonConvert.SerializeObject(model),
             };
 
-            var queueKey = $"{Configs.CacheConfigs.QueueName}-{Guid.NewGuid():N}";
+            var queueKey = $"{Configs.CacheConfigs.QueueName}-{key ?? Guid.NewGuid().ToString("N")}";
             await cache.SetItemAsync(queueKey, message);
 
             timerDispatcher.Run(queueKey, delay,
-                async (key) => await dispatcher.DispatchAsync(key, token));
+                async (key) => await dispatcher.DispatchAsync(key, token),
+                async (key) => await cache.RemoveItemAsync(key));
         }
         catch (Exception e)
         {
             logger.LogError(e, "Exception in PushAsync");
         }
+    }
+
+    public void CancelAsync(string key)
+    {
+        var queueKey = $"{Configs.CacheConfigs.QueueName}-{key}";
+        timerDispatcher.Cancel(queueKey);
     }
 }

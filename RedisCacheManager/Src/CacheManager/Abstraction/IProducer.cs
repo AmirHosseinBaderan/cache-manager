@@ -2,7 +2,9 @@ namespace CacheManager.Abstraction;
 
 public interface IProducer
 {
-    Task PushAsync<T>(T model,TimeSpan delay, CancellationToken token = default);
+    Task PushAsync<T>(T model,TimeSpan delay,string? key = null, CancellationToken token = default);
+    
+    void CancelAsync(string key);
 }
 
 public class MessageEnvelope
