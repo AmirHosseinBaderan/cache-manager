@@ -30,9 +30,9 @@ public static class Configuration
         assembly ??= Assembly.GetExecutingAssembly();
 
         // Add Producer & Dispatcher
-        services.AddSingleton<IProducer, Producer>();
-        services.AddSingleton<ITimerDispatcher, TimerDispatcher>();
+        services.AddScoped<IProducer, Producer>();
         services.AddScoped<RedisDispatcher>();
+        services.AddSingleton<ITimerDispatcher, TimerDispatcher>();
         
         // Find all classes implementing IRedisConsumer<T>
         var consumerTypes = assembly.GetTypes()
