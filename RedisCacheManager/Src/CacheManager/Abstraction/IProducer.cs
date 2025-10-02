@@ -4,7 +4,7 @@ public interface IProducer
 {
     Task PushAsync<T>(T model,TimeSpan delay,string? key = null, CancellationToken token = default);
     
-    void CancelAsync(string key);
+    void Cancel(string key);
 }
 
 public class MessageEnvelope
