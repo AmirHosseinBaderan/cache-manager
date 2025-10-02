@@ -1,11 +1,9 @@
-using System.Text.RegularExpressions;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace CacheManager.Core;
 
-internal class RedisDispatcher(ICacheDb db, IJsonCache cache, IServiceProvider sp, ILogger<RedisDispatcher> logger)
+internal class RedisDispatcher(IJsonCache cache, IServiceProvider sp, ILogger<RedisDispatcher> logger)
 {
     public async Task DispatchAsync(MessageEnvelope message, CancellationToken ct)
     {
@@ -27,7 +25,6 @@ internal class RedisDispatcher(ICacheDb db, IJsonCache cache, IServiceProvider s
 
     public async Task DispatchAsync(string key, CancellationToken ct)
     {
-        await cache.RemoveItemAsync(key);
         var value = await cache.GetItemAsync<MessageEnvelope>(key);
         if (value is null)
             return;

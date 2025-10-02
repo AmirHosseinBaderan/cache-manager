@@ -28,15 +28,17 @@ using var scope = host.Services.CreateScope();
 var provider = scope.ServiceProvider;
 var producer = provider.GetRequiredService<IProducer>();
 
-// await producer.PushAsync(order);
-Task.Run(async () =>
-{
-    for (int i = 0; i < 200000; i++)
-    {
-        Order order = new(Guid.NewGuid(), "amir hossein", i);
-        await producer.PushAsync(order, TimeSpan.FromSeconds(10));
-    }
-});
+Order order = new(Guid.NewGuid(), "Order with repeat", 1);
+
+await producer.PushAsync(order, TimeSpan.FromSeconds(5), repeat: true);
+// Task.Run(async () =>
+// {
+//     for (int i = 0; i < 20; i++)
+//     {
+//         Order order = new(Guid.NewGuid(), "amir hossein", i);
+//         await producer.PushAsync(order, TimeSpan.FromSeconds(10));
+//     }
+// });
 // // 3️⃣ Run the host to start background services (consumers)
 
 // for (int i = 1; i < 2000; i++)

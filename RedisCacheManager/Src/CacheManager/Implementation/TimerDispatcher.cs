@@ -7,28 +7,26 @@ internal class TimerDispatcher : ITimerDispatcher
     private readonly Dictionary<string, Timer> _timers = new();
     private readonly Dictionary<string, Action<string>> _cancelCallbacks = new();
 
-    public void Run(string key, TimeSpan timeSpan, Action<string> onElapsed, Action<string>? onCanceled = null)
+    public void Run(string key, TimeSpan timeSpan, Action<string> onElapsed, bool repeat = false,
+        Action<string>? onCanceled = null)
     {
-        Cancel(key); // ensure old timer is cleared if exists
-
         var timer = new Timer(timeSpan.TotalMilliseconds)
         {
-            AutoReset = false,
-            Enabled = true
+            AutoReset = repeat,
+            Enabled = true,
         };
 
         timer.Elapsed += (sender, args) =>
         {
             onElapsed(key);
-            Cancel(key, triggerCallback: false); // cleanup, don’t call cancel callback here
+            if (!repeat)
+                Cancel(key, triggerCallback: false);
         };
 
         _timers[key] = timer;
 
         if (onCanceled != null)
-        {
             _cancelCallbacks[key] = onCanceled;
-        }
     }
 
     public void Cancel(string key, bool triggerCallback = true)
