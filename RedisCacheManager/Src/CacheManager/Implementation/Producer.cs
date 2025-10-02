@@ -33,7 +33,7 @@ internal class Producer(
         }
     }
 
-    public void CancelAsync(string key)
+    public void Cancel(string key)
     {
         var queueKey = $"{Configs.CacheConfigs.QueueName}-{key}";
         timerDispatcher.Cancel(queueKey);
