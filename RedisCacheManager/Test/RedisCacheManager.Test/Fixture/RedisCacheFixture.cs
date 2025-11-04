@@ -1,6 +1,6 @@
 using CacheManager.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
+using Xunit.Abstractions;
 
 namespace CacheManager.Tests.Fixtures;
 
@@ -9,14 +9,22 @@ public class RedisCacheFixture : IAsyncLifetime
     public IServiceProvider ServiceProvider { get; private set; } = default!;
     public ServiceCollection Services { get; private set; } = default!;
     public TestModel Model { get; private set; } = default!;
-
+    
     public async Task InitializeAsync()
     {
         // Setup model
         Model = new TestModel("1", "Amir", "Baderan");
 
-        // Configure services
+       // Configure services
         Services = new ServiceCollection();
+       
+        // ✅ Add built-in logging
+        Services.AddLogging(builder =>
+        {
+            builder.ClearProviders();
+            builder.AddConsole(); // log to test output
+        });
+        
         Services.AddRedisCacheManager(() => new CacheConfigs
         {
             ConnectionString = "127.0.0.1:6379",

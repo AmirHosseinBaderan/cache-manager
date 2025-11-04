@@ -1,11 +1,12 @@
-﻿namespace RedisCacheManager.Test.Cache;
+﻿using Xunit.Abstractions;
 
-public class PortoCacheTest(RedisCacheFixture fixture) : IClassFixture<RedisCacheFixture>
+namespace RedisCacheManager.Test.Cache;
+
+public class PortoCacheTest(RedisCacheFixture fixture,ITestOutputHelper outputHelper) : IClassFixture<RedisCacheFixture>
 {
     private readonly IProtoCache _cache = fixture.ServiceProvider.GetRequiredService<IProtoCache>();
 
-    private readonly ILogger<PortoCacheTest> _logger =
-        fixture.ServiceProvider.GetRequiredService<ILogger<PortoCacheTest>>();
+    private readonly TestLogging _logger = new(outputHelper);
 
     private readonly Person _model = new()
     {
@@ -19,7 +20,7 @@ public class PortoCacheTest(RedisCacheFixture fixture) : IClassFixture<RedisCach
     [Fact(DisplayName = "Should set proto cache item successfully")]
     public async Task SetCache()
     {
-        _logger.LogInformation("🧩 Setting proto cache item...");
+        _logger.Log("🧩 Setting proto cache item...");
 
         var result = await _cache.SetItemAsync(_key, _model);
 
@@ -28,13 +29,13 @@ public class PortoCacheTest(RedisCacheFixture fixture) : IClassFixture<RedisCach
         Assert.Equal(_model.Name, result.Name);
         Assert.Equal(_model.Email, result.Email);
 
-        _logger.LogInformation("✅ Proto cache item set successfully.");
+        _logger.Log("✅ Proto cache item set successfully.");
     }
 
     [Fact(DisplayName = "Should get or set proto cache item successfully")]
     public async Task GetOrSetCache()
     {
-        _logger.LogInformation("🧩 Running GetOrSetCache test for proto cache...");
+        _logger.Log("🧩 Running GetOrSetCache test for proto cache...");
 
         var result = await _cache.GetOrSetItemAsync<Person>(_key + ":GetOrSet", async () =>
             new Person
@@ -50,13 +51,13 @@ public class PortoCacheTest(RedisCacheFixture fixture) : IClassFixture<RedisCach
         Assert.Equal("Amir2", result.Name);
         Assert.Equal("Baderan@gmail2.com", result.Email);
 
-        _logger.LogInformation("✅ Proto cache item retrieved or set successfully.");
+        _logger.Log("✅ Proto cache item retrieved or set successfully.");
     }
 
     [Fact(DisplayName = "Should get proto cache item successfully")]
     public async Task GetCache()
     {
-        _logger.LogInformation("🧩 Retrieving proto cache item...");
+        _logger.Log("🧩 Retrieving proto cache item...");
 
         var result = await _cache.GetItemAsync<Person>(_key);
 
@@ -65,6 +66,6 @@ public class PortoCacheTest(RedisCacheFixture fixture) : IClassFixture<RedisCach
         Assert.Equal("Amir hossein baderan", result.Name);
         Assert.Equal("amirhossein@gmail.com", result.Email);
 
-        _logger.LogInformation("✅ Proto cache item retrieved successfully.");
+        _logger.Log("✅ Proto cache item retrieved successfully.");
     }
 }
