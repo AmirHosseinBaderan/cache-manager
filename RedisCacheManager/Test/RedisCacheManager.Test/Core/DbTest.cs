@@ -1,70 +1,35 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using CacheManager.Configuration;
-using CacheManager.Core;
-using Newtonsoft.Json;
+﻿namespace RedisCacheManager.Test.Core;
 
-namespace RedisCacheManager.Test.Core;
-
-public class DbTest
+public class DbTest(RedisCacheFixture fixture) : IClassFixture<RedisCacheFixture>
 {
-    private IServiceCollection _services;
+    private readonly IServiceProvider _provider = fixture.ServiceProvider;
+    private readonly ILogger<DbTest> _logger = fixture.ServiceProvider.GetRequiredService<ILogger<DbTest>>();
 
-    [SetUp]
-    public void SetUp()
-    {
-        _services = new ServiceCollection();
-        _services.AddRedisCacheManager(() => new()
-        {
-            ConnectionString = "127.0.0.1:6379",
-            QueueName = "Test-Queue",
-            Instance = 0,
-            Formatting = Formatting.None,
-        });
-    }
-
-    public async Task<ICacheDb?> GetDbService()
-    {
-        IServiceProvider provider = _services.BuildServiceProvider();
-        return provider.GetService<ICacheDb?>();
-    }
-
-    [Test]
+    [Fact(DisplayName = "Should open Redis database with default configuration")]
     public async Task GetDataBaseInstanceWithDefaultConfig()
     {
-        var service = await GetDbService();
-        if (service is null)
-        {
-            Assert.Fail("Cant inject services");
-            return;
-        }
+        _logger.LogInformation("🔍 Starting test: Get Redis database using default config...");
 
-        var db = await service.GetDataBaseAsync();
-        if (db is null)
-        {
-            Assert.Fail("Cant open data base with default configs");
-            return;
-        }
+        var dbService = _provider.GetService<ICacheDb>();
+        Assert.NotNull(dbService);
 
-        Assert.Pass("Data base opend successfuly with default configs");
+        var db = await dbService!.GetDataBaseAsync();
+        Assert.NotNull(db);
+
+        _logger.LogInformation("✅ Redis database opened successfully with default configuration.");
     }
 
-    [Test]
-    public async Task GetDataBaseInstanceWithCustomeConfig()
+    [Fact(DisplayName = "Should open Redis database with custom configuration")]
+    public async Task GetDataBaseInstanceWithCustomConfig()
     {
-        var service = await GetDbService();
-        if (service is null)
-        {
-            Assert.Fail("Cant inject services");
-            return;
-        }
+        _logger.LogInformation("🔍 Starting test: Get Redis database using custom config...");
 
-        var db = await service.GetDataBaseAsync("127.0.0.1:6379", 1);
-        if (db is null)
-        {
-            Assert.Fail("Cant open data base with custome configs");
-            return;
-        }
+        var dbService = _provider.GetService<ICacheDb>();
+        Assert.NotNull(dbService);
 
-        Assert.Pass("Data base opend successfuly with custome configs");
+        var db = await dbService!.GetDataBaseAsync("127.0.0.1:6379", 1);
+        Assert.NotNull(db);
+
+        _logger.LogInformation("✅ Redis database opened successfully with custom configuration.");
     }
 }

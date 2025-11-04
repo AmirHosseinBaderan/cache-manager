@@ -1,118 +1,70 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using CacheManager.Abstraction;
-using CacheManager.Configuration;
-using Newtonsoft.Json;
+﻿namespace RedisCacheManager.Test.Cache;
 
-namespace RedisCacheManager.Test.Cache;
-
-[TestFixture]
-public class PortoCacheTest
+public class PortoCacheTest(RedisCacheFixture fixture) : IClassFixture<RedisCacheFixture>
 {
-    private IServiceCollection _services;
+    private readonly IProtoCache _cache = fixture.ServiceProvider.GetRequiredService<IProtoCache>();
 
-    private Person _model;
+    private readonly ILogger<PortoCacheTest> _logger =
+        fixture.ServiceProvider.GetRequiredService<ILogger<PortoCacheTest>>();
+
+    private readonly Person _model = new()
+    {
+        Id = 1,
+        Email = "amirhossein@gmail.com",
+        Name = "Amir hossein baderan",
+    };
 
     private readonly string _key = "Cached-Proto-Item";
 
-    [SetUp]
-    public void SetUp()
-    {
-        _model = new()
-        {
-            Id = 1,
-            Email = "amirhossein@gmail.com",
-            Name = "Amir hossein baderan",
-        };
-
-        _services = new ServiceCollection();
-        _services.AddLogging();
-        _services.AddRedisCacheManager(() => new()
-        {
-            ConnectionString = "127.0.0.1:6379",
-            QueueName = "Test-Queue",
-            Instance = 0,
-            Formatting = Formatting.None,
-        });
-    }
-
-    public async Task<IProtoCache?> GetService()
-    {
-        IServiceProvider provider = _services.BuildServiceProvider();
-        return provider.GetService<IProtoCache?>();
-    }
-
-    [Test, Order(1)]
+    [Fact(DisplayName = "Should set proto cache item successfully")]
     public async Task SetCache()
     {
-        var service = await GetService();
-        if (service is null)
-        {
-            Assert.Fail("Cant inject services");
-            return;
-        }
+        _logger.LogInformation("🧩 Setting proto cache item...");
 
-        var result = await service.SetItemAsync(_key, _model);
-        if (result != _model)
-        {
-            Assert.Fail("Set item fail");
-            return;
-        }
+        var result = await _cache.SetItemAsync(_key, _model);
 
-        Assert.Pass("Item set successfuly");
-        return;
+        Assert.NotNull(result);
+        Assert.Equal(_model.Id, result.Id);
+        Assert.Equal(_model.Name, result.Name);
+        Assert.Equal(_model.Email, result.Email);
+
+        _logger.LogInformation("✅ Proto cache item set successfully.");
     }
 
-    [Test, Order(2)]
+    [Fact(DisplayName = "Should get or set proto cache item successfully")]
     public async Task GetOrSetCache()
     {
-        var service = await GetService();
-        if (service is null)
-        {
-            Assert.Fail("Cant inject services");
-            return;
-        }
+        _logger.LogInformation("🧩 Running GetOrSetCache test for proto cache...");
 
-        var result = await service.GetOrSetItemAsync<Person>(_key + "GetOrSet", async () =>
-        {
-            Person model = new()
+        var result = await _cache.GetOrSetItemAsync<Person>(_key + ":GetOrSet", async () =>
+            new Person
             {
                 Id = 2,
                 Name = "Amir2",
                 Email = "Baderan@gmail2.com",
-            };
-            return model;
-        });
-        if (result is not Person { Id: 2, Name: "Amir2", Email: "Baderan@gmail2.com" })
-        {
-            Assert.Fail("Get or set item fail");
-            return;
-        }
+            }
+        );
 
-        Assert.Pass("Item Get or set successfuly");
-        return;
+        Assert.NotNull(result);
+        Assert.Equal(2, result.Id);
+        Assert.Equal("Amir2", result.Name);
+        Assert.Equal("Baderan@gmail2.com", result.Email);
+
+        _logger.LogInformation("✅ Proto cache item retrieved or set successfully.");
     }
 
-    [Test, Order(3)]
+    [Fact(DisplayName = "Should get proto cache item successfully")]
     public async Task GetCache()
     {
-        var service = await GetService();
-        if (service is null)
-        {
-            Assert.Fail("Cant inject services");
-            return;
-        }
+        _logger.LogInformation("🧩 Retrieving proto cache item...");
 
-        var result = await service.GetItemAsync<Person>(_key);
-        if (result is Person and
-            {
-                Id: 1, Email: "amirhossein@gmail.com", Name: "Amir hossein baderan",
-            })
-        {
-            Assert.Pass("Item Get successfuly");
-            return;
-        }
+        var result = await _cache.GetItemAsync<Person>(_key);
 
-        Assert.Fail("Get item fail");
-        return;
+        Assert.NotNull(result);
+        Assert.Equal(1, result.Id);
+        Assert.Equal("Amir hossein baderan", result.Name);
+        Assert.Equal("amirhossein@gmail.com", result.Email);
+
+        _logger.LogInformation("✅ Proto cache item retrieved successfully.");
     }
 }

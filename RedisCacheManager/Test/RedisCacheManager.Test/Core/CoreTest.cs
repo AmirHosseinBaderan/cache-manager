@@ -1,62 +1,39 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using CacheManager.Configuration;
-using CacheManager.Core;
-using Newtonsoft.Json;
+﻿namespace RedisCacheManager.Test.Core;
 
-namespace RedisCacheManager.Test.Core;
-
-public class CoreTest
+public class CoreTest(RedisCacheFixture fixture) : IClassFixture<RedisCacheFixture>
 {
-    private IServiceCollection _services;
+    private readonly IServiceProvider _provider = fixture.ServiceProvider;
+    private readonly ILogger<CoreTest> _logger = fixture.ServiceProvider.GetRequiredService<ILogger<CoreTest>>();
 
-    [SetUp]
-    public void SetUp()
-    {
-        _services = new ServiceCollection();
-        _services.AddRedisCacheManager(() => new()
-        {
-            ConnectionString = "127.0.0.1:6379",
-            QueueName = "Test-Queue",
-            Instance = 0,
-            Formatting = Formatting.None,
-        });
-    }
-
-    [Test]
+    [Fact(DisplayName = "Should connect with default Redis configuration")]
     public async Task ConnectionWithDefaultConfig()
     {
-        IServiceProvider provider = _services.BuildServiceProvider();
-        ICacheCore? core = provider.GetService<ICacheCore>();
+        _logger.LogInformation("🔍 Starting connection test with default Redis configuration...");
 
-        if (core is null)
-        {
-            Assert.Fail("Cant inject services");
-            return;
-        }
+        var core = _provider.GetService<ICacheCore>();
+        Assert.NotNull(core);
 
-        var connection = await core.ConnectAsync();
-        if (connection is null)
-            Assert.Fail("Faild to connect with redid db");
-        else
-            Assert.Pass("Connect to db");
+        var connection = await core!.ConnectAsync();
+
+        Assert.NotNull(connection);
+        Assert.True(connection.IsConnected, "Failed to connect to Redis with default config");
+
+        _logger.LogInformation("✅ Successfully connected to Redis with default configuration.");
     }
 
-    [Test]
-    public async Task ConnectionWithCustomeConfig()
+    [Fact(DisplayName = "Should connect with custom Redis configuration")]
+    public async Task ConnectionWithCustomConfig()
     {
-        IServiceProvider provider = _services.BuildServiceProvider();
-        ICacheCore? core = provider.GetService<ICacheCore>();
+        _logger.LogInformation("🔍 Starting connection test with custom Redis configuration...");
 
-        if (core is null)
-        {
-            Assert.Fail("Cant inject services");
-            return;
-        }
+        var core = _provider.GetService<ICacheCore>();
+        Assert.NotNull(core);
 
-        var connection = await core.ConnectAsync("127.0.0.1:6379");
-        if (connection is null)
-            Assert.Fail("Faild to connect with redid db");
-        else
-            Assert.Pass("Connect to db");
+        var connection = await core!.ConnectAsync("127.0.0.1:6379");
+
+        Assert.NotNull(connection);
+        Assert.True(connection.IsConnected, "Failed to connect to Redis with custom config");
+
+        _logger.LogInformation("✅ Successfully connected to Redis using custom configuration.");
     }
 }

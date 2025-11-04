@@ -1,104 +1,57 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using CacheManager.Abstraction;
-using CacheManager.Configuration;
-using Newtonsoft.Json;
+﻿namespace RedisCacheManager.Test.Cache;
 
-namespace RedisCacheManager.Test.Cache;
-
-public class CacheTest
+public class CacheTest(RedisCacheFixture fixture) : IClassFixture<RedisCacheFixture>
 {
-    private IServiceCollection _services;
+    private readonly IJsonCache _cache = fixture.ServiceProvider.GetRequiredService<IJsonCache>();
+    private readonly ILogger<CacheTest> _logger = fixture.ServiceProvider.GetRequiredService<ILogger<CacheTest>>();
 
-    private CacheModel _model;
-
+    private readonly CacheModel _model = new("1", "Amir", "Baderan");
     private readonly string _key = "Cached-Item";
 
-    [SetUp]
-    public void SetUp()
-    {
-        _model = new("1", "Amir", "Baderan");
-
-        _services = new ServiceCollection();
-        _services.AddRedisCacheManager(() => new()
-        {
-            ConnectionString = "127.0.0.1:6379",
-            QueueName = "Test-Queue",
-            Instance = 0,
-            Formatting = Formatting.None,
-        });
-    }
-
-    public IJsonCache? GetService()
-    {
-        IServiceProvider provider = _services.BuildServiceProvider();
-        return provider.GetService<IJsonCache?>();
-    }
-
-    [Test, Order(1)]
+    [Fact(DisplayName = "Should set cache item successfully")]
     public async Task SetCache()
     {
-        var service =  GetService();
-        if (service is null)
-        {
-            Assert.Fail("Cant inject services");
-            return;
-        }
+        _logger.LogInformation("🧩 Setting cache item...");
 
-        var result = await service.SetItemAsync(_key, _model);
-        if (result != _model)
-        {
-            Assert.Fail("Set item fail");
-            return;
-        }
+        var result = await _cache.SetItemAsync(_key, _model);
 
-        Assert.Pass("Item set successfuly");
-        return;
+        Assert.NotNull(result);
+        Assert.Equal(_model.Id, result.Id);
+        Assert.Equal(_model.Name, result.Name);
+        Assert.Equal(_model.LastName, result.LastName);
+
+        _logger.LogInformation("✅ Item set successfully in cache.");
     }
 
-    [Test, Order(2)]
+    [Fact(DisplayName = "Should get or set cache item successfully")]
     public async Task GetOrSetCache()
     {
-        var service =  GetService();
-        if (service is null)
-        {
-            Assert.Fail("Cant inject services");
-            return;
-        }
+        _logger.LogInformation("🧩 Running GetOrSetCache test...");
 
-        var result = await service.GetOrSetItemAsync(_key + "GetOrSet", () =>
-        {
-            CacheModel model = new("2", "Amir2", "Baderan2");
-            return model;
-        });
-        if (result is not CacheModel { Id: "2", Name: "Amir2", LastName: "Baderan2" })
-        {
-            Assert.Fail("Get or set item fail");
-            return;
-        }
+        var result = await _cache.GetOrSetItemAsync(_key + ":GetOrSet", () =>
+            new CacheModel("2", "Amir2", "Baderan2")
+        );
 
-        Assert.Pass("Item Get or set successfuly");
-        return;
+        Assert.NotNull(result);
+        Assert.Equal("2", result.Id);
+        Assert.Equal("Amir2", result.Name);
+        Assert.Equal("Baderan2", result.LastName);
+
+        _logger.LogInformation("✅ Item retrieved or set successfully.");
     }
 
-    [Test, Order(3)]
+    [Fact(DisplayName = "Should get cache item successfully")]
     public async Task GetCache()
     {
-        var service =  GetService();
-        if (service is null)
-        {
-            Assert.Fail("Cant inject services");
-            return;
-        }
+        _logger.LogInformation("🧩 Retrieving cache item...");
 
-        var result = await service.GetItemAsync<CacheModel>(_key);
-        if (result is CacheModel and
-            {
-                Id: "1", Name: "Amir", LastName: "Baderan",
-            })
-        {
-            Assert.Pass("Item Get successfuly");
-            return;
-        }
-        Assert.Fail("Get item fail");
+        var result = await _cache.GetItemAsync<CacheModel>(_key);
+
+        Assert.NotNull(result);
+        Assert.Equal("1", result.Id);
+        Assert.Equal("Amir", result.Name);
+        Assert.Equal("Baderan", result.LastName);
+
+        _logger.LogInformation("✅ Cache item retrieved successfully.");
     }
 }
