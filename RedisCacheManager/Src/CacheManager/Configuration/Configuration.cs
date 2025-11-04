@@ -1,6 +1,4 @@
 ﻿using System.Reflection;
-using CacheManager.Abstraction;
-using CacheManager.Core;
 using CacheManager.Implementation;
 using Microsoft.Extensions.DependencyInjection;
 

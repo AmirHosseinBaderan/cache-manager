@@ -18,7 +18,13 @@ var host = Host.CreateDefaultBuilder(args)
         });
 
         // Redis producer/consumer
-        services.AddRedisCacheManager(() => new("127.0.0.1:6379", 1, null, QueueName: "QueueTest"));
+        services.AddRedisCacheManager(() => new()
+        {
+            ConnectionString = "127.0.0.1:6379",
+            QueueName = "Test-Queue",
+            Instance = 0,
+            Formatting = Formatting.None,
+        });
         services.AddRedisCacheManagerQueue(typeof(Program).Assembly);
     })
     .Build();

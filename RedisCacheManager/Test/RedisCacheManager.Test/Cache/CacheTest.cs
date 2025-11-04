@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using CacheManager.Abstraction;
 using CacheManager.Configuration;
+using Newtonsoft.Json;
 
 namespace RedisCacheManager.Test.Cache;
 
@@ -18,10 +19,16 @@ public class CacheTest
         _model = new("1", "Amir", "Baderan");
 
         _services = new ServiceCollection();
-        _services.AddRedisCacheManager(() => new("127.0.0.1:6379", 1, null,QueueName:"QueueTest"));
+        _services.AddRedisCacheManager(() => new()
+        {
+            ConnectionString = "127.0.0.1:6379",
+            QueueName = "Test-Queue",
+            Instance = 0,
+            Formatting = Formatting.None,
+        });
     }
 
-    public async Task<IJsonCache?> GetService()
+    public IJsonCache? GetService()
     {
         IServiceProvider provider = _services.BuildServiceProvider();
         return provider.GetService<IJsonCache?>();
@@ -30,7 +37,7 @@ public class CacheTest
     [Test, Order(1)]
     public async Task SetCache()
     {
-        var service = await GetService();
+        var service =  GetService();
         if (service is null)
         {
             Assert.Fail("Cant inject services");
@@ -51,7 +58,7 @@ public class CacheTest
     [Test, Order(2)]
     public async Task GetOrSetCache()
     {
-        var service = await GetService();
+        var service =  GetService();
         if (service is null)
         {
             Assert.Fail("Cant inject services");
@@ -76,7 +83,7 @@ public class CacheTest
     [Test, Order(3)]
     public async Task GetCache()
     {
-        var service = await GetService();
+        var service =  GetService();
         if (service is null)
         {
             Assert.Fail("Cant inject services");
@@ -93,6 +100,5 @@ public class CacheTest
             return;
         }
         Assert.Fail("Get item fail");
-        return;
     }
 }

@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using CacheManager.Configuration;
 using CacheManager.Core;
+using Newtonsoft.Json;
 
 namespace RedisCacheManager.Test.Core;
 
@@ -12,7 +13,13 @@ public class CoreTest
     public void SetUp()
     {
         _services = new ServiceCollection();
-        _services.AddRedisCacheManager(() => new("127.0.0.1:6379", 1, null,QueueName:"QueueTest"));
+        _services.AddRedisCacheManager(() => new()
+        {
+            ConnectionString = "127.0.0.1:6379",
+            QueueName = "Test-Queue",
+            Instance = 0,
+            Formatting = Formatting.None,
+        });
     }
 
     [Test]

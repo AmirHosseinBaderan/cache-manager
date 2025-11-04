@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using CacheManager.Abstraction;
 using CacheManager.Configuration;
+using Newtonsoft.Json;
 
 namespace RedisCacheManager.Test.Cache;
 
@@ -25,7 +26,13 @@ public class PortoCacheTest
 
         _services = new ServiceCollection();
         _services.AddLogging();
-        _services.AddRedisCacheManager(() => new("127.0.0.1:6379", 1, null,QueueName:"QueueTest"));
+        _services.AddRedisCacheManager(() => new()
+        {
+            ConnectionString = "127.0.0.1:6379",
+            QueueName = "Test-Queue",
+            Instance = 0,
+            Formatting = Formatting.None,
+        });
     }
 
     public async Task<IProtoCache?> GetService()
@@ -104,6 +111,7 @@ public class PortoCacheTest
             Assert.Pass("Item Get successfuly");
             return;
         }
+
         Assert.Fail("Get item fail");
         return;
     }

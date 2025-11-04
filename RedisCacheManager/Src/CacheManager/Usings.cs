@@ -4,3 +4,7 @@ global using CacheManager.Abstraction;
 global using CacheManager.Configuration;
 global using CacheManager.Core;
 global using StackExchange.Redis;
+global using System.Net;
+global using CacheManager.Configuration;
+global using Microsoft.Extensions.Logging;
+global using StackExchange.Redis;
