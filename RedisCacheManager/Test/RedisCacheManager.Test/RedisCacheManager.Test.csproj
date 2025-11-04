@@ -1,47 +1,54 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-	<PropertyGroup>
-		<TargetFramework>net8.0</TargetFramework>
-		<ImplicitUsings>enable</ImplicitUsings>
-		<Nullable>enable</Nullable>
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
 
-		<IsPackable>false</IsPackable>
-		<IsTestProject>true</IsTestProject>
-	</PropertyGroup>
+        <IsPackable>false</IsPackable>
+        <IsTestProject>true</IsTestProject>
+    </PropertyGroup>
 
-	<ItemGroup>
-		<PackageReference Include="BenchmarkDotNet" Version="0.14.0" />
-		<PackageReference Include="coverlet.collector" Version="6.0.0" />
-		<PackageReference Include="Google.Protobuf" Version="3.28.3" />
-		<PackageReference Include="Grpc.Tools" Version="2.67.0">
-			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-			<PrivateAssets>all</PrivateAssets>
-		</PackageReference>
-		<PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
-		<PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="8.0.0" />
-		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
-		<PackageReference Include="Moq" Version="4.20.70" />
-		<PackageReference Include="NUnit" Version="3.14.0" />
-		<PackageReference Include="NUnit.Analyzers" Version="3.9.0" />
-		<PackageReference Include="NUnit3TestAdapter" Version="4.5.0" />
-	</ItemGroup>
+    <ItemGroup>
+        <!-- Benchmarking & Coverage -->
+        <PackageReference Include="BenchmarkDotNet" Version="0.14.0"/>
+        <PackageReference Include="coverlet.collector" Version="6.0.0"/>
 
-	<ItemGroup>
-		<ProjectReference Include="..\..\Src\CacheManager\CacheManager.csproj" />
-	</ItemGroup>
+        <!-- gRPC & Dependencies -->
+        <PackageReference Include="Google.Protobuf" Version="3.28.3"/>
+        <PackageReference Include="Grpc.Tools" Version="2.67.0">
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+            <PrivateAssets>all</PrivateAssets>
+        </PackageReference>
 
-	<ItemGroup>
-		<Using Include="NUnit.Framework" />
-	</ItemGroup>
+        <!-- Hosting & Runtime -->
+        <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0"/>
+        <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="8.0.0"/>
 
-	<ItemGroup>
-		<Folder Include="Protos\" />
-	</ItemGroup>
+        <!-- Testing Framework -->
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0"/>
+        <PackageReference Include="xunit" Version="2.9.2"/>
+        <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="xunit.analyzers" Version="1.3.0"/>
+    </ItemGroup>
 
+    <ItemGroup>
+        <ProjectReference Include="..\..\Src\CacheManager\CacheManager.csproj"/>
+    </ItemGroup>
 
+    <ItemGroup>
+        <Using Include="Xunit"/>
+    </ItemGroup>
 
-	<ItemGroup>
-		<Protobuf Include="Protos\person.proto" GrpcServices="None" />
-	</ItemGroup>
+    <ItemGroup>
+        <Folder Include="Protos\"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Protobuf Include="Protos\person.proto" GrpcServices="None"/>
+    </ItemGroup>
 
 </Project>
