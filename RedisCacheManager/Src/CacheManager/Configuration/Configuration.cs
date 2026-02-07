@@ -19,6 +19,13 @@ public static class Configuration
         services.AddScoped<IJsonCache, JsonCache>();
         services.AddScoped<IProtoCache, ProtoCache>();
 
+        // Add new Redis data structure services
+        services.AddScoped<IRedisHashCache, RedisHashCache>();
+        services.AddScoped<IRedisListCache, RedisListCache>();
+        services.AddScoped<IRedisSetCache, RedisSetCache>();
+        services.AddScoped<IRedisSortedSetCache, RedisSortedSetCache>();
+        services.AddScoped<IRedisKeyManager, RedisKeyManager>();
+
         return services;
     }
 

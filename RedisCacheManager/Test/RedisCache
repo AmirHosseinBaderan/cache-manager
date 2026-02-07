@@ -1,0 +1,150 @@
+using Xunit.Abstractions;
+
+namespace RedisCacheManager.Test.Cache;
+
+public class RedisHashCacheTest(RedisCacheFixture fixture, ITestOutputHelper outputHelper) : IClassFixture<RedisCacheFixture>
+{
+    private readonly IRedisHashCache _hashCache = fixture.ServiceProvider.GetRequiredService<IRedisHashCache>();
+    private readonly TestLogging _logger = new(outputHelper);
+    private readonly string _hashKey = "TestHash";
+    private readonly string _field1 = "User:1";
+    private readonly string _field2 = "User:2";
+
+    [Fact(DisplayName = "Should set hash field successfully")]
+    public async Task SetHashField()
+    {
+        _logger.Log("🧩 Setting hash field...");
+
+        var result = await _hashCache.SetAsync(_hashKey, _field1, "{\"Name\":\"Amir\",\"Age\":25}");
+
+        Assert.True(result);
+        _logger.Log("✅ Hash field set successfully.");
+    }
+
+    [Fact(DisplayName = "Should set multiple hash fields successfully")]
+    public async Task SetMultipleHashFields()
+    {
+        _logger.Log("🧩 Setting multiple hash fields...");
+
+        var fields = new Dictionary<string, string>
+        {
+            { _field1, "{\"Name\":\"Amir\",\"Age\":25}" },
+            { _field2, "{\"Name\":\"Sara\",\"Age\":30}" }
+        };
+
+        var result = await _hashCache.SetAsync(_hashKey, fields);
+
+        Assert.True(result);
+        _logger.Log("✅ Multiple hash fields set successfully.");
+    }
+
+    [Fact(DisplayName = "Should get hash field successfully")]
+    public async Task GetHashField()
+    {
+        _logger.Log("🧩 Getting hash field...");
+
+        // First set a field
+        await _hashCache.SetAsync(_hashKey, _field1, "{\"Name\":\"Amir\",\"Age\":25}");
+
+        var result = await _hashCache.GetAsync(_hashKey, _field1);
+
+        Assert.NotNull(result);
+        Assert.Contains("Amir", result);
+        _logger.Log("✅ Hash field retrieved successfully.");
+    }
+
+    [Fact(DisplayName = "Should get all hash fields successfully")]
+    public async Task GetAllHashFields()
+    {
+        _logger.Log("🧩 Getting all hash fields...");
+
+        // Setup
+        var fields = new Dictionary<string, string>
+        {
+            { _field1, "{\"Name\":\"Amir\",\"Age\":25}" },
+            { _field2, "{\"Name\":\"Sara\",\"Age\":30}" }
+        };
+        await _hashCache.SetAsync(_hashKey, fields);
+
+        var result = await _hashCache.GetAllAsync(_hashKey);
+
+        Assert.NotNull(result);
+        Assert.Equal(2, result.Count);
+        _logger.Log("✅ All hash fields retrieved successfully.");
+    }
+
+    [Fact(DisplayName = "Should check if hash field exists")]
+    public async Task HashFieldExists()
+    {
+        _logger.Log("🧩 Checking if hash field exists...");
+
+        await _hashCache.SetAsync(_hashKey, _field1, "{\"Name\":\"Amir\"}");
+
+        var exists = await _hashCache.ExistsAsync(_hashKey, _field1);
+
+        Assert.True(exists);
+        _logger.Log("✅ Hash field existence checked successfully.");
+    }
+
+    [Fact(DisplayName = "Should delete hash field successfully")]
+    public async Task DeleteHashField()
+    {
+        _logger.Log("🧩 Deleting hash field...");
+
+        await _hashCache.SetAsync(_hashKey, _field1, "{\"Name\":\"Amir\"}");
+        var result = await _hashCache.DeleteAsync(_hashKey, _field1);
+
+        Assert.True(result);
+        _logger.Log("✅ Hash field deleted successfully.");
+    }
+
+    [Fact(DisplayName = "Should increment hash field value")]
+    public async Task IncrementHashField()
+    {
+        _logger.Log("🧩 Incrementing hash field value...");
+
+        await _hashCache.SetAsync(_hashKey, "Counter", "10");
+        var result = await _hashCache.IncrementAsync(_hashKey, "Counter", 5);
+
+        Assert.Equal(15, result);
+        _logger.Log("✅ Hash field incremented successfully.");
+    }
+
+    [Fact(DisplayName = "Should get hash length successfully")]
+    public async Task GetHashLength()
+    {
+        _logger.Log("🧩 Getting hash length...");
+
+        var fields = new Dictionary<string, string>
+        {
+            { _field1, "Value1" },
+            { _field2, "Value2" },
+            { "User:3", "Value3" }
+        };
+        await _hashCache.SetAsync(_hashKey, fields);
+
+        var length = await _hashCache.GetLengthAsync(_hashKey);
+
+        Assert.Equal(3, length);
+        _logger.Log("✅ Hash length retrieved successfully.");
+    }
+
+    [Fact(DisplayName = "Should get random field from hash")]
+    public async Task GetRandomFieldFromHash()
+    {
+        _logger.Log("🧩 Getting random field from hash...");
+
+        var fields = new Dictionary<string, string>
+        {
+            { _field1, "Value1" },
+            { _field2, "Value2" }
+        };
+        await _hashCache.SetAsync(_hashKey, fields);
+
+        var result = await _hashCache.GetRandomFieldAsync(_hashKey);
+
+        Assert.NotNull(result);
+        Assert.True(fields.ContainsKey(result));
+        _logger.Log("✅ Random field retrieved successfully.");
+    }
+}
