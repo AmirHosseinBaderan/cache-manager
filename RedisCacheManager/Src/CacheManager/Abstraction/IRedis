@@ -1,0 +1,53 @@
+namespace CacheManager.Abstraction;
+
+/// <summary>
+/// Interface for Redis Bitmap operations.
+/// Bitmaps are ideal for tracking boolean states or counting occurrences efficiently.
+/// </summary>
+public interface IRedisBitmapCache
+{
+    /// <summary>
+    /// Sets or clears the bit at the given offset.
+    /// </summary>
+    Task<bool> SetBitAsync(string key, long offset, bool value);
+
+    /// <summary>
+    /// Gets the bit value at the given offset.
+    /// </summary>
+    Task<bool> GetBitAsync(string key, long offset);
+
+    /// <summary>
+    /// Counts the number of bits set to 1 in a range.
+    /// </summary>
+    Task<long> BitCountAsync(string key, long start = 0, long end = -1);
+
+    /// <summary>
+    /// Performs bitwise AND between multiple keys.
+    /// </summary>
+    Task<long> BitAndAsync(string destination, IEnumerable<string> keys);
+
+    /// <summary>
+    /// Performs bitwise OR between multiple keys.
+    /// </summary>
+    Task<long> BitOrAsync(string destination, IEnumerable<string> keys);
+
+    /// <summary>
+    /// Performs bitwise XOR between multiple keys.
+    /// </summary>
+    Task<long> BitXorAsync(string destination, IEnumerable<string> keys);
+
+    /// <summary>
+    /// Performs bitwise NOT on a key.
+    /// </summary>
+    Task<long> BitNotAsync(string destination, string source);
+
+    /// <summary>
+    /// Finds the position of the first bit set to 0 or 1.
+    /// </summary>
+    Task<long> BitPositionAsync(string key, bool bit, long start = 0, long end = -1);
+
+    /// <summary>
+    /// Returns the length of the bitmap in bytes.
+    /// </summary>
+    Task<long> BitLengthAsync(string key);
+}

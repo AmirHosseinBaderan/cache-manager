@@ -349,7 +349,7 @@ internal class RedisSortedSetCache(ICacheDb cacheDb, ILogger<RedisSortedSetCache
                 return 0;
             }
 
-            var count = await db.SortedSetLengthAsync(key, min, max);
+            var count = await db.SortedSetCountAsync(key, min, max);
             logger.LogDebug("SortedSetCount: Key={Key}, Min={Min}, Max={Max}, Count={Count}", key, min, max, count);
             return count;
         }

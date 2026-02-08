@@ -315,7 +315,7 @@ internal class RedisKeyManager(ICacheDb cacheDb, ILogger<RedisKeyManager> logger
                 return RedisValue.Null;
             }
 
-            var key = await db.StringGetRandomAsync();
+            var key = await db.KeyRandomAsync();
             logger.LogDebug("RandomKey: Key={Key}", key);
             return key;
         }
